@@ -1,8 +1,9 @@
 'use client';
 
-import { useTransition } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { STATUS_OPTIONS, ReviewStatus } from '@/app/types/review-request';
-import { updateRequestStatus } from '@/app/actions/requests';
+import { createClient } from '@/app/lib/supabase/client';
 
 interface StatusSelectProps {
   id: string;
@@ -10,18 +11,43 @@ interface StatusSelectProps {
 }
 
 export default function StatusSelect({ id, currentStatus }: StatusSelectProps) {
-  const [isPending, startTransition] = useTransition();
+  const [value, setValue] = useState(currentStatus);
+  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
 
-  function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
+  useEffect(() => {
+    setValue(currentStatus);
+  }, [currentStatus]);
+
+  async function handleChange(e: React.ChangeEvent<HTMLSelectElement>) {
     const next = e.target.value as ReviewStatus;
-    startTransition(async () => {
-      await updateRequestStatus(id, next);
-    });
+    setValue(next); // Instant UI update
+    setIsPending(true);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('review_requests')
+        .update({ status: next })
+        .eq('id', id);
+
+      if (error) {
+        alert('Failed to update: ' + error.message);
+        setValue(currentStatus); // revert
+      } else {
+        router.refresh(); // sync server state
+      }
+    } catch (err: any) {
+      alert('Network error: ' + err.message);
+      setValue(currentStatus);
+    } finally {
+      setIsPending(false);
+    }
   }
 
   return (
     <select
-      defaultValue={currentStatus}
+      value={value}
       onChange={handleChange}
       disabled={isPending}
       className={`text-sm border border-slate-200 rounded-md px-2 py-1 bg-white text-slate-700 

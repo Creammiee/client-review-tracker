@@ -2,7 +2,7 @@
 
 ## How I used AI
 
-I used Gemini/Antigravity as a full pair-programming co-pilot throughout this build.
+I used Antigravity as a full pair-programming co-pilot throughout this build.
 
 **What I delegated:**
 - Scaffolding: `create-next-app` command options, Supabase `@supabase/ssr` boilerplate.

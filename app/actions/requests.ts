@@ -64,13 +64,17 @@ export async function updateRequestStatus(
 ): Promise<ActionResult> {
   const supabase = await createClient();
 
-  const { error } = await supabase
+  const result = await supabase
     .from('review_requests')
     .update({ status })
-    .eq('id', id);
+    .eq('id', id)
+    .select(); // Ask Supabase to return the updated rows
 
-  if (error) {
-    return { success: false, error: `Failed to update status: ${error.message}` };
+  console.log('Update attempt ->', { id, status, result });
+
+  if (result.error) {
+    console.error('Supabase update error:', result.error);
+    return { success: false, error: `Failed to update status: ${result.error.message}` };
   }
 
   revalidatePath('/requests');
