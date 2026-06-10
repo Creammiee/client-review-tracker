@@ -12,14 +12,16 @@ export async function getRequestsByStatus(status?: string): Promise<ReviewReques
 
   // Bug fix 1: await the query (original was missing `await`)
   // Bug fix 2: Supabase JS SDK returns { data, error } — not `.rows`
-  const query = supabase
+  let query = supabase
     .from('review_requests')
     .select('*')
     .order('created_at', { ascending: false });
 
-  // Only apply the status filter when a non-empty value is provided
+  // Only apply the status filter when a non-empty value is provided.
+  // IMPORTANT: Supabase query builder is immutable — .eq() returns a NEW builder.
+  // Without reassigning, the filter is silently dropped and all rows are returned.
   if (status && status.trim() !== '') {
-    query.eq('status', status);
+    query = query.eq('status', status);
   }
 
   const { data, error } = await query;
