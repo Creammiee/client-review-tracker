@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/app/lib/supabase/server';
-import { formatASIN, validateReviewRequest } from '@/app/lib/validation';
+import { reviewRequestSchema } from '@/app/lib/validations/review-request';
 import { ReviewStatus } from '@/app/types/review-request';
 
 export interface ActionResult {
@@ -14,22 +14,31 @@ export interface ActionResult {
 // ─── Create ────────────────────────────────────────────────────────────────
 
 export async function createReviewRequest(
+  prevState: ActionResult,
   formData: FormData
 ): Promise<ActionResult> {
-  const client_name = (formData.get('client_name') as string) ?? '';
-  const product_asin = (formData.get('product_asin') as string) ?? '';
+  const parsed = reviewRequestSchema.safeParse({
+    client_name: formData.get('client_name'),
+    product_asin: formData.get('product_asin'),
+  });
 
-  // Server-side validation
-  const fieldErrors = validateReviewRequest(client_name, product_asin);
-  if (Object.keys(fieldErrors).length > 0) {
+  if (!parsed.success) {
+    const fieldErrors: Record<string, string> = {};
+    for (const error of parsed.error.issues) {
+      if (error.path[0]) {
+        fieldErrors[error.path[0] as string] = error.message;
+      }
+    }
     return { success: false, fieldErrors };
   }
 
-  const supabase = createClient();
+  const { client_name, product_asin } = parsed.data;
+
+  const supabase = await createClient();
 
   const { error } = await supabase.from('review_requests').insert({
-    client_name: client_name.trim(),
-    product_asin: formatASIN(product_asin),
+    client_name,
+    product_asin,
   });
 
   if (error) {
@@ -37,7 +46,7 @@ export async function createReviewRequest(
     if (error.code === '23505') {
       return {
         success: false,
-        error: `A review request for "${client_name.trim()}" with ASIN ${formatASIN(product_asin)} already exists.`,
+        error: `A review request for "${client_name}" with ASIN ${product_asin} already exists.`,
       };
     }
     return { success: false, error: `Database error: ${error.message}` };
@@ -53,7 +62,7 @@ export async function updateRequestStatus(
   id: string,
   status: ReviewStatus
 ): Promise<ActionResult> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from('review_requests')

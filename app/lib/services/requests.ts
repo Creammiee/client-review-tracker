@@ -8,7 +8,7 @@ import { ReviewRequest } from '@/app/types/review-request';
  * Passing an empty string (or no argument) returns all requests.
  */
 export async function getRequestsByStatus(status?: string): Promise<ReviewRequest[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // Bug fix 1: await the query (original was missing `await`)
   // Bug fix 2: Supabase JS SDK returns { data, error } — not `.rows`

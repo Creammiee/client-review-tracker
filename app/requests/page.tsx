@@ -1,4 +1,4 @@
-import { getRequestsByStatus } from '@/app/lib/requests';
+import { getRequestsByStatus } from '@/app/lib/services/requests';
 import RequestList from '@/app/components/RequestList';
 import RequestForm from '@/app/components/RequestForm';
 import StatusFilter from '@/app/components/StatusFilter';

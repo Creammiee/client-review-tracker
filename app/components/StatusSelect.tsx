@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { STATUS_OPTIONS, ReviewStatus } from '@/app/types/review-request';
-import { updateRequestStatus } from '@/app/requests/actions';
+import { updateRequestStatus } from '@/app/actions/requests';
 
 interface StatusSelectProps {
   id: string;

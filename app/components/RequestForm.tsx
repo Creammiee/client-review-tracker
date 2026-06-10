@@ -1,7 +1,7 @@
 'use client';
 
 import { useActionState, useEffect, useRef } from 'react';
-import { createReviewRequest, ActionResult } from '@/app/requests/actions';
+import { createReviewRequest, ActionResult } from '@/app/actions/requests';
 
 const initialState: ActionResult = { success: false };
 
