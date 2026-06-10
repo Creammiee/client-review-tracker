@@ -63,7 +63,7 @@ Open [http://localhost:3000](http://localhost:3000) — it redirects to `/reques
 npm test
 ```
 
-Tests cover the ASIN validation logic and the combined form validator (`__tests__/validation.test.ts`).
+Tests cover the ASIN validation logic and the Zod schema validator (`app/lib/validations/__tests__/review-request.test.ts`) using **Vitest**.
 
 ---
 
@@ -71,22 +71,25 @@ Tests cover the ASIN validation logic and the combined form validator (`__tests_
 
 ```
 app/
+  actions/
+    requests.ts       Server Actions for create + update
   components/         UI components (form, list, badges, filters)
   lib/
-    requests.ts       Server-side data fetcher (fixed from buggy original)
-    validation.ts     Shared validation utilities
+    services/
+      requests.ts     Server-side data fetcher (fixed from buggy original)
+    validations/
+      review-request.ts Shared Zod schema validation
+      __tests__/      Vitest test files
     supabase/
       server.ts       Supabase server client (@supabase/ssr)
       client.ts       Supabase browser client
   requests/
     page.tsx          Main list page (Server Component)
-    actions.ts        Server Actions for create + update
+    loading.tsx       Loading skeleton
   types/
     review-request.ts Shared TypeScript types
 supabase/
   schema.sql          Database schema (run in Supabase SQL editor)
-__tests__/
-  validation.test.ts  Unit tests
 ```
 
 ---
