@@ -1,36 +1,100 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Client Review Tracker
+
+An internal tool to track Amazon product review requests by client and ASIN.
+
+**Stack:** Next.js 15 (App Router) · TypeScript · Supabase (Postgres) · Tailwind CSS
+
+---
+
+## Features
+
+- **List view** — all review requests, server-rendered
+- **Add form** — validates `client_name` (required) and `product_asin` (exactly 10 chars)
+- **Inline status update** — change Pending → In Progress → Done from the table
+- **Filter by status** — tab-style filter using URL search params
+- **Duplicate prevention** — same client + ASIN is rejected with a clear message
+
+---
 
 ## Getting Started
 
-First, run the development server:
+### 1. Clone and install
+
+```bash
+git clone <your-repo-url>
+cd client-review-tracker
+npm install
+```
+
+### 2. Set up environment variables
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` and fill in your Supabase project URL and anon key:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-key>
+```
+
+You can find these in your Supabase project → **Settings → API**.
+
+### 3. Set up the database
+
+In the **Supabase SQL Editor**, run the contents of [`supabase/schema.sql`](./supabase/schema.sql).
+
+This creates the `review_requests` table with the correct constraints and indexes.
+
+### 4. Run locally
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) — it redirects to `/requests`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Running Tests
 
-## Learn More
+```bash
+npm test
+```
 
-To learn more about Next.js, take a look at the following resources:
+Tests cover the ASIN validation logic and the combined form validator (`__tests__/validation.test.ts`).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+app/
+  components/         UI components (form, list, badges, filters)
+  lib/
+    requests.ts       Server-side data fetcher (fixed from buggy original)
+    validation.ts     Shared validation utilities
+    supabase/
+      server.ts       Supabase server client (@supabase/ssr)
+      client.ts       Supabase browser client
+  requests/
+    page.tsx          Main list page (Server Component)
+    actions.ts        Server Actions for create + update
+  types/
+    review-request.ts Shared TypeScript types
+supabase/
+  schema.sql          Database schema (run in Supabase SQL editor)
+__tests__/
+  validation.test.ts  Unit tests
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Design Decisions
+
+See [PROCESS.md](./PROCESS.md) for:
+- How AI was used during development
+- Duplicate handling rationale
+- Bug fix analysis
+- What I'd improve with more time
